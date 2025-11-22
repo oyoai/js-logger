@@ -1,196 +1,90 @@
-# JavaScript Logger - minimal, file-aware, tag-aware logging for modern javascript
+# **JavaScript Logger**
+### _minimal, file-aware, tag-aware logging for modern javascript_
 
+## quick start (import directly from github)
 
-`js-logger` is a tiny, zero-dependency logging utility for browser-based ES modules and lightweight applications.
+```js
+import { Logger, track } from "https://raw.githubusercontent.com/oyoli/js-logger/main/Logger.js";
 
-It provides:
+Logger.setOn(true);                         // enable all logs
+const log = track(import.meta);
+log("tag1", "message");
+````
 
-* global on/off switch
-* per-tag filtering (`ui`, `clean`, `debug`, etc.)
-* per-file filtering (auto-detected via `track(import.meta)`)
-* automatic discovery of tags and filenames
-* a simple, predictable API
-
-Ideal for debugging tools, parsing pipelines, prototypes, and web apps.
+this works in any modern browser supporting ES modules.
 
 ---
 
-## **Installation**
+## logging usage
 
-Import directly from GitHub using a raw ES-module URL:
-
-```js
-import { Logger, track } from 'https://raw.githubusercontent.com/oyoli/js-logger/main/Logger.js';
-```
-
-This gives you the latest version instantly and keeps your project lightweight.
-
----
-
-## **Quick Start**
+### 1. get a logger for the file
 
 ```js
-import { Logger, track } from 'https://raw.githubusercontent.com/oyoli/js-logger/main/Logger.js';
-
-Logger.setOn(true);  // enable logs globally
+import { track } from "https://raw.githubusercontent.com/oyoli/js-logger/main/Logger.js";
 
 const log = track(import.meta);
-
-log('ui', 'page initialized');
-log('clean', 'normalized text');
-log('debug', 'debug info:', data);
-
-console.log(Logger.dump());
+log("tag1", "message");
 ```
+
+`track(import.meta)` automatically extracts the filename (`script1.js`, `script2.js`, etc.) so logs can be muted per-file.
 
 ---
 
-## **Global Controls**
-
-### enable / disable everything
+### 2. basic global on/off
 
 ```js
 Logger.setOn(true);   // enable all logs
-Logger.setOn(false);  // silence all logs
+Logger.setOn(false);  // disable ALL logs (production)
 ```
 
 ---
 
-## **tag-based controls**
-
-tags are the first argument you pass into `log(tag, ...)`:
+### 3. per-tag control
 
 ```js
-log('ui', 'clicked submit');
-log('clean', 'removed whitespace');
-log('debug', 'loop iteration', i);
+Logger.muteTag("tag1");
+Logger.muteTag("tag2");
+Logger.unmuteTag("tag2");
 ```
 
-mute/unmute tags:
+call site:
 
 ```js
-Logger.muteTag('debug');
-Logger.unmuteTag('debug');
-```
-
----
-
-## **file-based controls**
-
-`track(import.meta)` automatically detects the calling filename:
-
-```js
-const log = track(import.meta); // e.g. "Analyzer.js"
-```
-
-mute/unmute logs from that file:
-
-```js
-Logger.muteFile('Analyzer.js');
-Logger.unmuteFile('Analyzer.js');
+log("tag1", "message", variable);
+log("tag1", "message");
 ```
 
 ---
 
-## **inspect logger state**
+### 4. per-file control
 
 ```js
-console.log(Logger.dump());
+Logger.muteFile("script1.js");
+Logger.unmuteFile("script1.js");
 ```
 
-output example:
+---
+
+### 5. inspect logger state
+
+```js
+console.log(Logger.debugInfo());
+```
+
+example output:
 
 ```json
 {
   "on": true,
-  "files": { "Analyzer.js": false },
-  "tags": { "debug": false },
-  "knownFiles": ["Analyzer.js","Extractor.js","ui.js"],
-  "knownTags": ["ui","clean","debug"]
+  "files": { "script1.js": false },
+  "tags": { "tag": false },
+  "knownFiles": ["script1.js", "script2.js"],
+  "knownTags": ["tag1", "tag2", "tag3"]
 }
 ```
 
 ---
 
-## **suggested tag conventions**
+## full configuration template
 
-| tag         | meaning                         |
-| ----------- | ------------------------------- |
-| `ui`        | user interface events           |
-| `extract`   | file/data extraction            |
-| `clean`     | text cleaning / normalization   |
-| `interpret` | higher-level logic              |
-| `debug`     | noisy debug info                |
-| `trace`     | extremely detailed debug info   |
-| `error`     | errors (usually remain visible) |
-
----
-
-## **example: logging-config.js**
-
-centralize your logging rules:
-
-```js
-import { Logger, track } from 'https://raw.githubusercontent.com/oyoli/js-logger/main/Logger.js';
-
-Logger.setOn(true);
-
-// tag filters
-Logger.muteTag('noisy');
-// Logger.muteTag('debug');
-
-// file filters
-// Logger.muteFile('Analyzer.js');
-
-const log = track(import.meta);
-log('config', 'logging config loaded');
-
-console.log(Logger.dump());
-```
-
----
-
-## **API Reference**
-
-### `Logger.setOn(boolean)`
-
-enable/disable all logs
-
-### `Logger.muteTag(tag)`
-
-mute logs with this tag
-
-### `Logger.unmuteTag(tag)`
-
-unmute logs with this tag
-
-### `Logger.muteFile(filename)`
-
-mute logs from a specific file
-
-### `Logger.unmuteFile(filename)`
-
-unmute logs from that file
-
-### `Logger.dump()`
-
-returns `{ on, files, tags, knownFiles, knownTags }`
-
-### `track(import.meta)`
-
-returns a per-file logger:
-
-```js
-const log = track(import.meta);
-log('tag', 'message');
-```
-
----
-
-## **Philosophy**
-
-* ultra-small and self-contained
-* zero dependencies
-* readable in one minute
-* structured logging without complexity
-* designed for clean browser-based debugging
+🡒 see **`logging-config.example.js`** in this repository.
